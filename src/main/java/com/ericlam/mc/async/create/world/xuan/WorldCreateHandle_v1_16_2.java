@@ -108,7 +108,7 @@ public class WorldCreateHandle_v1_16_2 implements WorldCreateHandler {
             if (Bukkit.getWorld(name.toLowerCase(Locale.ENGLISH)) != null) {
                 return null;
             } else {
-                //this.console.initWorld(internal, worlddata, worlddata, worlddata.getGeneratorSettings());
+                //this.console.initWorld(internal, worlddata, worlddata, worlddata.getGeneratorSettings()); // 不要初始化
                 internal.setSpawnFlags(true, true);
                 dedicatedServer.worldServer.put(internal.getDimensionKey(), internal);
                 //this.pluginManager.callEvent(new WorldInitEvent(internal.getWorld()));
