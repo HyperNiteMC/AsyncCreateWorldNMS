@@ -1,0 +1,6 @@
+main: com.ericlam.mc.async.create.world.main.AsyncCreateWorld
+name: AsyncCreateWorld
+version: ${project.version}
+api-version: "1.14"
+authors: [Xuan, Hydranapse_]
+depend: [ProtocolLib]
