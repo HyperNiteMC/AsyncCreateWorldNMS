@@ -1,37 +1,33 @@
-package main.java.com.ericlam.mc.async.create.world.xuan;
+package com.ericlam.mc.async.create.world.xuan;
 
-import com.destroystokyo.paper.PaperConfig;
-import com.ericlam.mc.async.create.world.xuan.WorldCreateHandler;
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.mojang.serialization.Lifecycle;
 import net.minecraft.server.v1_16_R1.*;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.Validate;
 import org.bukkit.craftbukkit.v1_16_R1.CraftServer;
 import org.bukkit.generator.ChunkGenerator;
 
 import java.io.File;
-import java.util.Locale;
+import java.io.IOException;
+import java.util.*;
 
 public class WorldCreateHandle_v1_16_2 implements WorldCreateHandler {
     @Override
     public World createWorld(WorldCreator creator) {
         CraftServer craftServer = (CraftServer) Bukkit.getServer(); // 修補原本函數
         DedicatedServer dedicatedServer = ((CraftServer) Bukkit.getServer()).getServer(); // 修補原本函數
-
-
         Preconditions.checkState(!dedicatedServer.worldServer.isEmpty(), "Cannot create additional worlds on STARTUP");
         Validate.notNull(creator, "Creator may not be null");
         String name = creator.name();
         ChunkGenerator generator = creator.generator();
         File folder = new File(craftServer.getWorldContainer(), name);
-        WorldType type = WorldType.getType(creator.type().getName());
-        boolean generateStructures = creator.generateStructures();
-
-        org.bukkit.World world = craftServer.getWorld(name);
+        World world = craftServer.getWorld(name);
         if (world != null) {
             return world;
         } else if (folder.exists() && !folder.isDirectory()) {
@@ -41,60 +37,93 @@ public class WorldCreateHandle_v1_16_2 implements WorldCreateHandler {
                 generator = craftServer.getGenerator(name);
             }
 
-            dedicatedServer.convertWorld(name);
-            int dimension = 10 + dedicatedServer.worldServer.size();
-            boolean used = false;
-
-            do {
-
-                for (WorldServer server : dedicatedServer.getWorlds()) {
-                    used = server.getWorldProvider().getDimensionManager().getDimensionID() + 1 == dimension;
-                    if (used) {
-                        ++dimension;
-                        break;
-                    }
-                }
-            } while (used);
-
-            boolean hardcore = false;
-            WorldNBTStorage sdm = new WorldNBTStorage(craftServer.getWorldContainer(), name, craftServer.getServer(), dedicatedServer.dataConverterManager);
-            WorldData worlddata = sdm.getWorldData();
-            WorldSettings worldSettings;
-            if (worlddata == null) {
-                worldSettings = new WorldSettings((Long) PaperConfig.seedOverride.getOrDefault(name, creator.seed()), EnumGamemode.getById(craftServer.getDefaultGameMode().getValue()), generateStructures, hardcore, type);
-                JsonElement parsedSettings = (new JsonParser()).parse(creator.generatorSettings());
-                if (parsedSettings.isJsonObject()) {
-                    worldSettings.setGeneratorSettings(parsedSettings.getAsJsonObject());
-                }
-
-                worlddata = new WorldData(worldSettings, name);
-            } else {
-                worlddata.setName(name);
-                worldSettings = new WorldSettings(worlddata);
+            ResourceKey actualDimension;
+            switch(creator.environment()) {
+                case NORMAL:
+                    actualDimension = WorldDimension.OVERWORLD;
+                    break;
+                case NETHER:
+                    actualDimension = WorldDimension.THE_NETHER;
+                    break;
+                case THE_END:
+                    actualDimension = WorldDimension.THE_END;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal dimension");
             }
 
-            DimensionManager actualDimension = DimensionManager.a(creator.environment().getId());
-            DimensionManager internalDimension = DimensionManager.register(name.toLowerCase(Locale.ENGLISH), new DimensionManager(dimension, actualDimension.getSuffix(), actualDimension.folder, (w, manager) -> {
-                return (WorldProvider) actualDimension.providerFactory.apply(w, manager);
-            }, actualDimension.hasSkyLight(), null ,actualDimension));
-            WorldServer internal = new WorldServer(dedicatedServer, dedicatedServer.executorService, sdm, worlddata, internalDimension, dedicatedServer.getMethodProfiler(), craftServer.getServer().worldLoadListenerFactory.create(11), creator.environment(), generator);
+            Convertable.ConversionSession worldSession;
+            try {
+                worldSession = Convertable.a(dedicatedServer.convertable.a(net.minecraft.server.v1_16_R1.World.OVERWORLD).getParentFile().toPath()).c(name, actualDimension);
+            } catch (IOException var23) {
+                throw new RuntimeException(var23);
+            }
 
-            //dedicatedServer.initWorld(internal, worlddata, worldSettings);
-            //internal.worldData.setDifficulty(EnumDifficulty.EASY);
-            //internal.setSpawnFlags(true, true);
-            // this.getServer().loadSpawn(internal.getChunkProvider().playerChunkMap.worldLoadListener, internal); // 不進行初始化
-            //this.pluginManager.callEvent(new WorldLoadEvent(internal.getWorld())); // 不進行初始化
+            MinecraftServer.convertWorld(worldSession);
+            boolean hardcore = creator.hardcore();
+            IRegistryCustom.Dimension iregistrycustom_dimension = IRegistryCustom.b();
+            RegistryReadOps<NBTBase> registryreadops = RegistryReadOps.a(DynamicOpsNBT.a, dedicatedServer.dataPackResources.h(), iregistrycustom_dimension);
+            WorldDataServer worlddata = (WorldDataServer)worldSession.a(registryreadops, dedicatedServer.datapackconfiguration);
+            if (worlddata == null) {
+                Properties properties = new Properties();
+                properties.put("generator-settings", Objects.toString(creator.generatorSettings()));
+                properties.put("level-seed", Objects.toString(creator.seed()));
+                properties.put("generate-structures", Objects.toString(creator.generateStructures()));
+                properties.put("level-type", Objects.toString(creator.type().getName()));
+                GeneratorSettings generatorsettings = GeneratorSettings.a(properties);
+                WorldSettings worldSettings = new WorldSettings(name, EnumGamemode.getById(GameMode.getByValue(dedicatedServer.getWorldServer(net.minecraft.server.v1_16_R1.World.OVERWORLD).worldDataServer.getGameType().getId()).getValue()), hardcore, EnumDifficulty.EASY, false, new GameRules(), dedicatedServer.datapackconfiguration);
+                worlddata = new WorldDataServer(worldSettings, generatorsettings, Lifecycle.stable());
+            }
 
+            worlddata.checkName(name);
+            worlddata.a(dedicatedServer.getServerModName(), dedicatedServer.getModded().isPresent());
+            if (dedicatedServer.options.has("forceUpgrade")) {
+                net.minecraft.server.v1_16_R1.Main.convertWorld(worldSession, DataConverterRegistry.a(), dedicatedServer.options.has("eraseCache"), () -> {
+                    return true;
+                }, (ImmutableSet)worlddata.getGeneratorSettings().e().c().stream().map((entry) -> {
+                    return ResourceKey.a(IRegistry.ad, ((ResourceKey)entry.getKey()).a());
+                }).collect(ImmutableSet.toImmutableSet()));
+            }
 
-            internal.keepSpawnInMemory = false; // 不緩存記憶體
-            world = internal.getWorld();
-            world.setKeepSpawnInMemory(false); // 不緩存記憶體
+            long j = BiomeManager.a(creator.seed());
+            List<MobSpawner> list = ImmutableList.of(new MobSpawnerPhantom(), new MobSpawnerPatrol(), new MobSpawnerCat(), new VillageSiege(), new MobSpawnerTrader(worlddata));
+            RegistryMaterials<WorldDimension> registrymaterials = worlddata.getGeneratorSettings().e();
+            WorldDimension worlddimension = (WorldDimension)registrymaterials.a(actualDimension);
+            DimensionManager dimensionmanager;
+            Object chunkgenerator;
+            if (worlddimension == null) {
+                dimensionmanager = DimensionManager.a();
+                chunkgenerator = GeneratorSettings.a((new Random()).nextLong());
+            } else {
+                dimensionmanager = worlddimension.b();
+                chunkgenerator = worlddimension.c();
+            }
 
-            // 新增到清單中
-            dedicatedServer.worldServer.put(internal.getWorldProvider().getDimensionManager(), internal);
+            ResourceKey<DimensionManager> typeKey = (ResourceKey)dedicatedServer.f.a().c(dimensionmanager).orElseThrow(() -> {
+                return new IllegalStateException("Unregistered dimension type: " + dimensionmanager);
+            });
+            ResourceKey<net.minecraft.server.v1_16_R1.World> worldKey = ResourceKey.a(IRegistry.ae, new MinecraftKey(name.toLowerCase(Locale.ENGLISH)));
+            WorldServer internal = new WorldServer(dedicatedServer, dedicatedServer.executorService, worldSession, worlddata, worldKey, typeKey, dimensionmanager, dedicatedServer.worldLoadListenerFactory.create(11), (net.minecraft.server.v1_16_R1.ChunkGenerator)chunkgenerator, worlddata.getGeneratorSettings().isDebugWorld(), j, creator.environment() == World.Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator);
 
-            //Bukkit.getPluginManager().callEvent(new WorldInitEvent(world)); // 事件
+            if (Bukkit.getWorld(name.toLowerCase(Locale.ENGLISH)) != null) {
+                return null;
+            } else {
+                //this.console.initWorld(internal, worlddata, worlddata, worlddata.getGeneratorSettings());
+                internal.setSpawnFlags(true, true);
+                dedicatedServer.worldServer.put(internal.getDimensionKey(), internal);
+                //this.pluginManager.callEvent(new WorldInitEvent(internal.getWorld()));
+                dedicatedServer.loadSpawn(internal.getChunkProvider().playerChunkMap.worldLoadListener, internal);
+                //this.pluginManager.callEvent(new WorldLoadEvent(internal.getWorld()));
 
-            return world;
+                internal.keepSpawnInMemory = false; // 不緩存記憶體
+                world = internal.getWorld();
+                world.setKeepSpawnInMemory(false);  // 不緩存記憶體
+
+                return internal.getWorld();
+            }
+        }
     }
+
+
+
 }
