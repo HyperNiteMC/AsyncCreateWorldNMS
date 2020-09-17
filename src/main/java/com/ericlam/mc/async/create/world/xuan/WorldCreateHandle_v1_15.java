@@ -62,7 +62,7 @@ public class WorldCreateHandle_v1_15 implements WorldCreateHandler {
             WorldData worlddata = sdm.getWorldData();
             WorldSettings worldSettings;
             if (worlddata == null) {
-                worldSettings = new WorldSettings((Long)PaperConfig.seedOverride.getOrDefault(name, creator.seed()), EnumGamemode.getById(craftServer.getDefaultGameMode().getValue()), generateStructures, hardcore, type);
+                worldSettings = new WorldSettings(/*(Long)PaperConfig.seedOverride.getOrDefault(name, creator.seed())*/ creator.seed(), EnumGamemode.getById(craftServer.getDefaultGameMode().getValue()), generateStructures, hardcore, type);
                 JsonElement parsedSettings = (new JsonParser()).parse(creator.generatorSettings());
                 if (parsedSettings.isJsonObject()) {
                     worldSettings.setGeneratorSettings(parsedSettings.getAsJsonObject());
