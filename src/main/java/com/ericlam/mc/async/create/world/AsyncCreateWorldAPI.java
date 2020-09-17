@@ -7,7 +7,9 @@ import org.bukkit.WorldCreator;
 
 public interface AsyncCreateWorldAPI {
 
-    World createWorld(WorldCreator creator);
+    WorldCreateHandler getWorldCreator();
+
+    WorldCreateHandler getWorldCreator(MinecraftVersion version);
 
     void register(MinecraftVersion version, WorldCreateHandler handler);
 

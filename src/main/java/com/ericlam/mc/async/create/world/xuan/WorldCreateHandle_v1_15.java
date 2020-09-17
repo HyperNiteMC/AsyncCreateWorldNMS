@@ -1,6 +1,5 @@
 package com.ericlam.mc.async.create.world.xuan;
 
-import com.destroystokyo.paper.PaperConfig;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -20,17 +19,17 @@ public class WorldCreateHandle_v1_15 implements WorldCreateHandler {
     @Override
     public World createWorld(WorldCreator creator) {
 
-        CraftServer     craftServer = ((CraftServer) Bukkit.getServer());
-        DedicatedServer console     = ((CraftServer) Bukkit.getServer()).getServer();
+        CraftServer craftServer = ((CraftServer) Bukkit.getServer());
+        DedicatedServer console = ((CraftServer) Bukkit.getServer()).getServer();
 
         Preconditions.checkState(!console.worldServer.isEmpty(), "Cannot create additional worlds on STARTUP");
         org.apache.commons.lang.Validate.notNull(creator, "Creator may not be null");
-        String          name                = creator.name();
-        ChunkGenerator  generator           = creator.generator();
-        File            folder              = new File(craftServer.getWorldContainer(), name);
-        World           world               = craftServer.getWorld(name);
-        WorldType       type                = WorldType.getType(creator.type().getName());
-        boolean         generateStructures  = creator.generateStructures();
+        String name = creator.name();
+        ChunkGenerator generator = creator.generator();
+        File folder = new File(craftServer.getWorldContainer(), name);
+        World world = craftServer.getWorld(name);
+        WorldType type = WorldType.getType(creator.type().getName());
+        boolean generateStructures = creator.generateStructures();
         if (world != null) {
             return world;
         } else if (folder.exists() && !folder.isDirectory()) {
@@ -47,15 +46,15 @@ public class WorldCreateHandle_v1_15 implements WorldCreateHandler {
             do {
                 Iterator var10 = console.getWorlds().iterator();
 
-                while(var10.hasNext()) {
-                    WorldServer server = (WorldServer)var10.next();
+                while (var10.hasNext()) {
+                    WorldServer server = (WorldServer) var10.next();
                     used = server.getWorldProvider().getDimensionManager().getDimensionID() + 1 == dimension;
                     if (used) {
                         ++dimension;
                         break;
                     }
                 }
-            } while(used);
+            } while (used);
 
             boolean hardcore = false;
             WorldNBTStorage sdm = new WorldNBTStorage(craftServer.getWorldContainer(), name, craftServer.getServer(), craftServer.getHandle().getServer().dataConverterManager);
@@ -74,8 +73,8 @@ public class WorldCreateHandle_v1_15 implements WorldCreateHandler {
                 worldSettings = new WorldSettings(worlddata);
             }
 
-            DimensionManager actualDimension    = DimensionManager.a(creator.environment().getId());
-            DimensionManager internalDimension  = DimensionManager.register(name.toLowerCase(Locale.ENGLISH), new DimensionManager(dimension, actualDimension.getSuffix(), actualDimension.folder, (w, manager) -> {
+            DimensionManager actualDimension = DimensionManager.a(creator.environment().getId());
+            DimensionManager internalDimension = DimensionManager.register(name.toLowerCase(Locale.ENGLISH), new DimensionManager(dimension, actualDimension.getSuffix(), actualDimension.folder, (w, manager) -> {
                 return (WorldProvider) actualDimension.providerFactory.apply(w, manager);
             }, actualDimension.hasSkyLight(), actualDimension.getGenLayerZoomer(), actualDimension));
             WorldServer internal = new WorldServer(console, console.executorService, sdm, worlddata, internalDimension, console.getMethodProfiler(), console.worldLoadListenerFactory.create(11), creator.environment(), generator);
@@ -90,7 +89,7 @@ public class WorldCreateHandle_v1_15 implements WorldCreateHandler {
                 internal.keepSpawnInMemory = false; // 不緩存記憶體
                 world = internal.getWorld();
                 world.setKeepSpawnInMemory(false);  // 不緩存記憶體
-                
+
                 //this.pluginManager.callEvent(new WorldInitEvent(internal.getWorld()));
                 //this.getServer().loadSpawn(internal.getChunkProvider().playerChunkMap.worldLoadListener, internal);
                 //this.pluginManager.callEvent(new WorldLoadEvent(internal.getWorld()));

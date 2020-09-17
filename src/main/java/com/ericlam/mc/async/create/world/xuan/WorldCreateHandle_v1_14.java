@@ -1,6 +1,5 @@
 package com.ericlam.mc.async.create.world.xuan;
 
-import com.destroystokyo.paper.PaperConfig;
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -14,7 +13,7 @@ import org.bukkit.generator.ChunkGenerator;
 import java.io.File;
 import java.util.Locale;
 
-public class WorldCreateHandle_v1_14 implements WorldCreateHandler{
+public class WorldCreateHandle_v1_14 implements WorldCreateHandler {
 
     @Override
     public org.bukkit.World createWorld(WorldCreator creator) {
@@ -61,7 +60,7 @@ public class WorldCreateHandle_v1_14 implements WorldCreateHandler{
             WorldData worlddata = sdm.getWorldData();
             WorldSettings worldSettings;
             if (worlddata == null) {
-                worldSettings = new WorldSettings((Long) PaperConfig.seedOverride.getOrDefault(name, creator.seed()), EnumGamemode.getById(craftServer.getDefaultGameMode().getValue()), generateStructures, hardcore, type);
+                worldSettings = new WorldSettings(/*(Long) PaperConfig.seedOverride.getOrDefault(name, creator.seed())*/ creator.seed(), EnumGamemode.getById(craftServer.getDefaultGameMode().getValue()), generateStructures, hardcore, type);
                 JsonElement parsedSettings = (new JsonParser()).parse(creator.generatorSettings());
                 if (parsedSettings.isJsonObject()) {
                     worldSettings.setGeneratorSettings(parsedSettings.getAsJsonObject());
