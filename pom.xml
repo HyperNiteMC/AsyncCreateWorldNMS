@@ -3,7 +3,7 @@
 
     <groupId>com.ericlam.mc</groupId>
     <artifactId>AsyncCreateWorld</artifactId>
-    <version>0.0.2</version>
+    <version>1.16.3</version>
 
     <repositories>
         <repository>
