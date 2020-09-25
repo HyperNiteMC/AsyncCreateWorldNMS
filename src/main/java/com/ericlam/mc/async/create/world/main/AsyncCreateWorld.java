@@ -21,7 +21,7 @@ public final class AsyncCreateWorld extends JavaPlugin implements AsyncCreateWor
         api = this;
 
         // register
-        this.register(MinecraftVersion.NETHER_UPDATE_2, new WorldCreateHandle_v1_16_2());
+        this.register(MinecraftVersion.NETHER_UPDATE_2, new WorldCreateHandle_v1_16_R2());
         this.register(MinecraftVersion.BEE_UPDATE, new WorldCreateHandle_v1_15());
         this.register(MinecraftVersion.VILLAGE_UPDATE, new WorldCreateHandle_v1_14());
         // register

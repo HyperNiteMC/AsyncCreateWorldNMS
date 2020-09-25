@@ -7,12 +7,8 @@
 
     <repositories>
         <repository>
-            <id>papermc</id>
-            <url>https://papermc.io/repo/repository/maven-public/</url>
-        </repository>
-        <repository>
             <id>xuan</id>
-            <url>https://xuan.nctu.me:8081/repository/Maven/</url>
+            <url>https://xuan.nctu.me:8081/repository/minecraft/</url>
         </repository>
     </repositories>
 
@@ -20,13 +16,13 @@
         <dependency>
             <groupId>patched</groupId>
             <artifactId>1.16</artifactId>
-            <version>R1</version>
+            <version>R2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>paper</groupId>
             <artifactId>1.16</artifactId>
-            <version>46</version>
+            <version>204</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -50,7 +46,7 @@
         <dependency>
             <groupId>paper</groupId>
             <artifactId>1.14</artifactId>
-            <version>236</version>
+            <version>243</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
