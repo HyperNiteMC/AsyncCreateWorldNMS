@@ -7,6 +7,10 @@
 
     <repositories>
         <repository>
+            <id>papermc</id>
+            <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
+        <repository>
             <id>xuan</id>
             <url>https://xuan.nctu.me:8081/repository/minecraft/</url>
         </repository>
