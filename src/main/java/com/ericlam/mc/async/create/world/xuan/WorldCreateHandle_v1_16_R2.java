@@ -100,7 +100,7 @@ public class WorldCreateHandle_v1_16_R2 implements WorldCreateHandler {
             ResourceKey<net.minecraft.server.v1_16_R2.World> worldKey = ResourceKey.a(IRegistry.L, new MinecraftKey(name.toLowerCase(Locale.ENGLISH)));
             WorldServer internal = new WorldServer(dedicatedServer, dedicatedServer.executorService, worldSession, worlddata, worldKey, dimensionmanager, craftServer.getServer().worldLoadListenerFactory.create(11), (net.minecraft.server.v1_16_R2.ChunkGenerator)chunkgenerator, worlddata.getGeneratorSettings().isDebugWorld(), j, creator.environment() == World.Environment.NORMAL ? list : ImmutableList.of(), true, creator.environment(), generator);
 
-            if (craftServer.getWorld(name) != null) {
+            if (craftServer.getWorld(name) == null) {
             //if (!this.worlds.containsKey(name.toLowerCase(Locale.ENGLISH))) {
                 return null;
             } else {
