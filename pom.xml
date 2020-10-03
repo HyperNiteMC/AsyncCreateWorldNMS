@@ -3,7 +3,7 @@
 
     <groupId>com.hypernite.mc</groupId>
     <artifactId>async-create-world</artifactId>
-    <version>1.16.3</version>
+    <version>1.16.3.2</version>
 
     <repositories>
         <repository>
